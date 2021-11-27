@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rfab-cs-lib", "rfab-cs-lib\rfab-cs-lib.csproj", "{BAF21012-051F-49DA-A21D-5C7811E79EAC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client-test", "client-test\client-test.csproj", "{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{BAF21012-051F-49DA-A21D-5C7811E79EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAF21012-051F-49DA-A21D-5C7811E79EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAF21012-051F-49DA-A21D-5C7811E79EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
