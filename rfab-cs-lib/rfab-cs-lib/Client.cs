@@ -16,13 +16,14 @@ namespace rfab_cs_lib
         public bool Connect(IPAddress iPAddress, int port)
         {
             tcpClient = new TcpClient();
-            tcpClient.Connect(iPAddress, port);
-            return tcpClient.Connected;
+
+            try { tcpClient.Connect(iPAddress, port); return tcpClient.Connected; }
+            catch { tcpClient = null; return false; }
         }
 
         public bool send_command(uint command, Dictionary<string, string> metaData, byte[] body)
         {
-            if (tcpClient != null)
+            if (tcpClient != null && tcpClient.Connected)
             {
                 var yamlSerializer = new SerializerBuilder().Build();
 
@@ -51,9 +52,22 @@ namespace rfab_cs_lib
                 {
                     body = new byte[0];
                 }
-                tcpClient.Client.Send(BitConverter.GetBytes(body.Length));
+                tcpClient.Client.Send(BitConverter.GetBytes(body.Length + 32));
                 tcpClient.Client.Send(body);
                 tcpClient.Client.Send(new byte[32]);
+
+                /*
+                byte[] data = new byte[] { };
+                BitTools.AppendBytesToArray(data, Info.VERSION);
+                BitTools.AppendBytesToArray(data, BitConverter.GetBytes(header.Length));
+                BitTools.AppendBytesToArray(data, header);
+                BitTools.AppendBytesToArray(data, BitConverter.GetBytes(body.Length));
+                BitTools.AppendBytesToArray(data, body);
+                BitTools.AppendBytesToArray(data, new byte[32]);
+
+                tcpClient.Client.Send(data);
+
+                */
 
 
                 return true;
@@ -67,7 +81,7 @@ namespace rfab_cs_lib
 
         public Data recv_command()
         {
-            if(tcpClient != null)
+            if(tcpClient != null && tcpClient.Connected)
             {
                 var yamlDeserializer = new DeserializerBuilder().Build();
 
@@ -111,10 +125,11 @@ namespace rfab_cs_lib
 
         public bool rfab_ping()
         {
-            if(tcpClient != null)
+            if(tcpClient != null && tcpClient.Connected)
             {
                 Dictionary<string,string> metadata = new Dictionary<string,string>();
                 send_command(Commands.CMD_PING, metadata, null);
+                recv_command();
 
                 return true;
             }
@@ -126,10 +141,11 @@ namespace rfab_cs_lib
 
         public bool rfab_disconnect()
         {
-            if (tcpClient != null)
+            if (tcpClient != null && tcpClient.Connected)
             {
                 Dictionary<string, string> metadata = new Dictionary<string, string>();
                 send_command(Commands.CMD_DISCONNECT, metadata, null);
+                tcpClient.Close();
 
                 return true;
             }
