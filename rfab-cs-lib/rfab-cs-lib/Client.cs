@@ -53,6 +53,9 @@ namespace rfab_cs_lib
                 {
                     body = new byte[0];
                 }
+
+                Console.WriteLine(body.Length);
+
                 tcpClient.Client.Send(BitConverter.GetBytes(body.Length + 32));
                 tcpClient.Client.Send(body);
                 tcpClient.Client.Send(new byte[32]);
