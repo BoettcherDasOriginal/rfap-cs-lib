@@ -23,6 +23,10 @@ namespace client_test
                 client.send_command(Commands.CMD_INFO, metadata, null);
 
                 Data data = client.recv_command();
+                for(int i = 0; i < data.Metadata.Count; i++)
+                {
+                    Console.WriteLine(data.Metadata.ElementAt(i));
+                }
                 
 
                 client.rfab_ping();
