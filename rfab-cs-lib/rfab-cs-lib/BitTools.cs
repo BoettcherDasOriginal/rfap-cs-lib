@@ -32,5 +32,26 @@ namespace rfab_cs_lib
 
             return result.ToArray();
         }
+
+        public static byte[] GetBytesFromInt(int value)
+        {
+            byte[] intBytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(intBytes);
+            }
+
+            return intBytes;
+        }
+
+        public static int GetIntFromByte(byte[] bytes)
+        {
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(bytes);
+            }
+
+            return BitConverter.ToInt32(bytes, 0);
+        }
     }
 }

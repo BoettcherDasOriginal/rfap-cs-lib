@@ -45,7 +45,7 @@ namespace rfab_cs_lib
 
                 // send header
 
-                tcpClient.Client.Send(BitConverter.GetBytes(header.ToArray().Length));
+                tcpClient.Client.Send(BitTools.GetBytesFromInt(header.ToArray().Length));
                 tcpClient.Client.Send(header.ToArray());
 
                 // send body
@@ -56,7 +56,7 @@ namespace rfab_cs_lib
 
                 Console.WriteLine(body.Length);
 
-                tcpClient.Client.Send(BitConverter.GetBytes(body.Length + 32));
+                tcpClient.Client.Send(BitTools.GetBytesFromInt(body.Length + 32));
                 tcpClient.Client.Send(body);
                 tcpClient.Client.Send(new byte[32]);
 
@@ -87,10 +87,10 @@ namespace rfab_cs_lib
                 byte[] header_length = new byte[4];
                 tcpClient.Client.Receive(header_length);
 
-                byte[] header_raw = new byte[BitConverter.ToInt32(header_length, 0)];
+                byte[] header_raw = new byte[BitTools.GetIntFromByte(header_length)];
                 tcpClient.Client.Receive(header_raw);
 
-                uint command = BitConverter.ToUInt32(header_raw, 0);
+                byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
                 Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string,string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 0, header_raw.Length - 32)));
                 byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw,header_raw.Length - 32, header_raw.Length);
 
@@ -99,7 +99,7 @@ namespace rfab_cs_lib
 
                 byte[] body_length = new byte[4];
                 tcpClient.Client.Receive(body_length);
-                byte[] body = new byte[BitConverter.ToInt32(body_length, 0) - 32];
+                byte[] body = new byte[BitTools.GetIntFromByte(body_length) - 32];
                 tcpClient.Client.Receive(body);
                 byte[] body_checksum = new byte[32];
                 tcpClient.Client.Receive(body_checksum);
