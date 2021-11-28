@@ -8,19 +8,20 @@ namespace rfab_cs_lib
 {
     public static class Commands
     {
-        public static uint CMD_PING             = 0x00000000;
-        public static uint CMD_DISCONNECT       = 0x01000000;
-        public static uint CMD_INFO             = 0xa0010000;
-        public static uint CMD_FILE_READ        = 0xf0020000;
-        public static uint CMD_FILE_DELETE      = 0xf1010000;
-        public static uint CMD_FILE_CREATE      = 0xf1020000;
-        public static uint CMD_FILE_COPY        = 0xf1030000;
-        public static uint CMD_FILE_MOVE        = 0xf1040000;
-        public static uint CMD_FILE_WRITE       = 0xf2010000;
-        public static uint CMD_DIRECTORY_READ   = 0xd0020000;
-        public static uint CMD_DIRECTORY_DELETE = 0xd1010000;
-        public static uint CMD_DIRECTORY_CREATE = 0xd1020000;
-        public static uint CMD_DIRECTORY_COPY   = 0xd1030000;
-        public static uint CMD_DIRECTORY_MOVE   = 0xd1040000;
+        public static byte[] CMD_PING             = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+        public static byte[] CMD_DISCONNECT       = new byte[] { 0x01, 0x00, 0x00, 0x00 };
+        public static byte[] CMD_INFO             = new byte[] { 0xa0, 0x01, 0x00, 0x00 };
+        public static byte[] CMD_ERROR            = new byte[] { 0xff, 0xff, 0xff, 0xff };
+        public static byte[] CMD_FILE_READ        = new byte[] { 0xf0, 0x02, 0x00, 0x00 };
+        public static byte[] CMD_FILE_DELETE      = new byte[] { 0xf1, 0x01, 0x00, 0x00 };
+        public static byte[] CMD_FILE_CREATE      = new byte[] { 0xf1, 0x02, 0x00, 0x00 };
+        public static byte[] CMD_FILE_COPY        = new byte[] { 0xf1, 0x03, 0x00, 0x00 };
+        public static byte[] CMD_FILE_MOVE        = new byte[] { 0xf1, 0x04, 0x00, 0x00 };
+        public static byte[] CMD_FILE_WRITE       = new byte[] { 0xf2, 0x01, 0x00, 0x00 };
+        public static byte[] CMD_DIRECTORY_READ   = new byte[] { 0xd0, 0x02, 0x00, 0x00 };
+        public static byte[] CMD_DIRECTORY_DELETE = new byte[] { 0xd1, 0x01, 0x00, 0x00 };
+        public static byte[] CMD_DIRECTORY_CREATE = new byte[] { 0xd1, 0x02, 0x00, 0x00 };
+        public static byte[] CMD_DIRECTORY_COPY   = new byte[] { 0xd1, 0x03, 0x00, 0x00 };
+        public static byte[] CMD_DIRECTORY_MOVE   = new byte[] { 0xd1, 0x04, 0x00, 0x00 };
     }
 }

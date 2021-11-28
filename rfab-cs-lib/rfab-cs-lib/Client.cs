@@ -21,7 +21,7 @@ namespace rfab_cs_lib
             catch { tcpClient = null; return false; }
         }
 
-        public bool send_command(uint command, Dictionary<string, string> metaData, byte[] body)
+        public bool send_command(byte[] command, Dictionary<string, string> metaData, byte[] body)
         {
             if (tcpClient != null && tcpClient.Connected)
             {
@@ -37,7 +37,7 @@ namespace rfab_cs_lib
 
                 List<byte> header = new List<byte>();
 
-                header = BitTools.AddBytesToList(header, BitConverter.GetBytes(command));
+                header = BitTools.AddBytesToList(header, command);
                 header = BitTools.AddBytesToList(header, Encoding.UTF8.GetBytes(yamlSerializer.Serialize(metaData)));
                 header = BitTools.AddBytesToList(header, new byte[32]);
 
