@@ -41,20 +41,18 @@ namespace rfab_cs_lib
                 header = BitTools.AddBytesToList(header, Encoding.UTF8.GetBytes(yamlSerializer.Serialize(metaData)));
                 header = BitTools.AddBytesToList(header, new byte[32]);
 
-                Console.WriteLine(header.ToArray().Length);
 
                 // send header
 
                 tcpClient.Client.Send(BitTools.GetBytesFromInt(header.ToArray().Length));
                 tcpClient.Client.Send(header.ToArray());
 
+
                 // send body
                 if (body == null)
                 {
                     body = new byte[0];
                 }
-
-                Console.WriteLine(body.Length);
 
                 tcpClient.Client.Send(BitTools.GetBytesFromInt(body.Length + 32));
                 tcpClient.Client.Send(body);
