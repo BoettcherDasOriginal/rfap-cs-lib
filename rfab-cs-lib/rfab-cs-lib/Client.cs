@@ -35,17 +35,18 @@ namespace rfab_cs_lib
 
                 // encode header
 
-                byte[] header = new byte[] { };
+                List<byte> header = new List<byte>();
 
-                BitTools.AppendBytesToArray(header, BitConverter.GetBytes(command));
-                BitTools.AppendBytesToArray(header, Encoding.UTF8.GetBytes(yamlSerializer.Serialize(metaData)));
-                BitTools.AppendBytesToArray(header, new byte[32]);
+                header = BitTools.AddBytesToList(header, BitConverter.GetBytes(command));
+                header = BitTools.AddBytesToList(header, Encoding.UTF8.GetBytes(yamlSerializer.Serialize(metaData)));
+                header = BitTools.AddBytesToList(header, new byte[32]);
 
+                Console.WriteLine(header.ToArray().Length);
 
                 // send header
 
-                tcpClient.Client.Send(BitConverter.GetBytes(header.Length));
-                tcpClient.Client.Send(header);
+                tcpClient.Client.Send(BitConverter.GetBytes(header.ToArray().Length));
+                tcpClient.Client.Send(header.ToArray());
 
                 // send body
                 if (body == null)
@@ -55,20 +56,6 @@ namespace rfab_cs_lib
                 tcpClient.Client.Send(BitConverter.GetBytes(body.Length + 32));
                 tcpClient.Client.Send(body);
                 tcpClient.Client.Send(new byte[32]);
-
-                /*
-                byte[] data = new byte[] { };
-                BitTools.AppendBytesToArray(data, Info.VERSION);
-                BitTools.AppendBytesToArray(data, BitConverter.GetBytes(header.Length));
-                BitTools.AppendBytesToArray(data, header);
-                BitTools.AppendBytesToArray(data, BitConverter.GetBytes(body.Length));
-                BitTools.AppendBytesToArray(data, body);
-                BitTools.AppendBytesToArray(data, new byte[32]);
-
-                tcpClient.Client.Send(data);
-
-                */
-
 
                 return true;
             }

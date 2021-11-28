@@ -8,29 +8,29 @@ namespace rfab_cs_lib
 {
     public static class BitTools
     {
-        public static byte[] AppendBytesToArray(byte[] array, byte[] append)
+        public static List<byte> AddBytesToList(List<byte> list, byte[] append)
         {
             for(int i = 0; i < append.Length; i++)
             {
-                array.Append(append[i]);
+                list.Add(append[i]);
             }
 
-            return array;
+            return list;
         }
 
         public static byte[] GetBytesBetweenArray(byte[] array, int start, int stop)
         {
-            byte[] result = new byte[] { };
+            List<byte> result = new List<byte>();
 
             for(int i = 0; i < array.Length; i++)
             {
                 if(i > start && i < stop)
                 {
-                    result.Append(array[i]);
+                    result.Add(array[i]);
                 }
             }
 
-            return result;
+            return result.ToArray();
         }
     }
 }
