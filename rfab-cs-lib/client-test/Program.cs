@@ -19,14 +19,13 @@ namespace client_test
             {
                 Console.WriteLine("Connected to 127.0.0.1:6700");
 
-                /*
                 Dictionary<string, string> metadata = new Dictionary<string, string>() { { "Path", "/" } };
                 client.send_command(Commands.CMD_INFO, metadata, null);
 
                 Data data = client.recv_command();
                 Console.WriteLine(data.Metadata);
                 Console.WriteLine(data.body);
-                */
+                
 
                 client.rfab_ping();
                 client.rfab_disconnect();

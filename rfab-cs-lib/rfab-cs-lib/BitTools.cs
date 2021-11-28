@@ -24,7 +24,7 @@ namespace rfab_cs_lib
 
             for(int i = 0; i < array.Length; i++)
             {
-                if(i > start && i < stop)
+                if(i >= start && i < stop)
                 {
                     result.Add(array[i]);
                 }

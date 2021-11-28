@@ -91,7 +91,7 @@ namespace rfab_cs_lib
                 tcpClient.Client.Receive(header_raw);
 
                 byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
-                Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string,string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 0, header_raw.Length - 32)));
+                Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string,string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
                 byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw,header_raw.Length - 32, header_raw.Length);
 
 
