@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using YamlDotNet.Serialization;
 
-namespace rfab_cs_lib
+namespace rfap_cs_lib
 {
     public class Client
     {

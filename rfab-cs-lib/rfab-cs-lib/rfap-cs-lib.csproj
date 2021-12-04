@@ -7,8 +7,8 @@
     <ProjectGuid>{BAF21012-051F-49DA-A21D-5C7811E79EAC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>rfab_cs_lib</RootNamespace>
-    <AssemblyName>rfab-cs-lib</AssemblyName>
+    <RootNamespace>rfap_cs_lib</RootNamespace>
+    <AssemblyName>rfap-cs-lib</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
