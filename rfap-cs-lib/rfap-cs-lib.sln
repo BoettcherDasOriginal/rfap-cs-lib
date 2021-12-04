@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rfap-cs-lib", "rfab-cs-lib\rfap-cs-lib.csproj", "{BAF21012-051F-49DA-A21D-5C7811E79EAC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rfap-cs-lib", "rfap-cs-lib\rfap-cs-lib.csproj", "{BAF21012-051F-49DA-A21D-5C7811E79EAC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client-test", "client-test\client-test.csproj", "{57B82C3E-67F6-4D9F-A837-0E6EDA716AE0}"
 EndProject

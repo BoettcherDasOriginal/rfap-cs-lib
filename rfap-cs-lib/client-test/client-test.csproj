@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rfab-cs-lib\rfap-cs-lib.csproj">
+    <ProjectReference Include="..\rfap-cs-lib\rfap-cs-lib.csproj">
       <Project>{baf21012-051f-49da-a21d-5c7811e79eac}</Project>
       <Name>rfap-cs-lib</Name>
     </ProjectReference>

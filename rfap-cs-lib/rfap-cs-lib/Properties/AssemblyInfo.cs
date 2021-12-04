@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
-[assembly: AssemblyTitle("rfab-cs-lib")]
+[assembly: AssemblyTitle("rfap-cs-lib")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("BöttcherDasOriginal")]
-[assembly: AssemblyProduct("rfab-cs-lib")]
+[assembly: AssemblyProduct("rfap-cs-lib")]
 [assembly: AssemblyCopyright("Copyright © BöttcherDasOriginal 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
