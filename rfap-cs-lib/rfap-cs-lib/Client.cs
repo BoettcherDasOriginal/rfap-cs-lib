@@ -28,7 +28,7 @@ namespace rfap_cs_lib
 
         #region Send/Receive command
 
-        public bool send_command(byte[] command, Dictionary<string, string> metaData, byte[] body)
+        public bool send_command(byte[] command, Dictionary<string, dynamic> metaData, byte[] body)
         {
             if (tcpClient != null && tcpClient.Connected)
             {
@@ -115,7 +115,7 @@ namespace rfap_cs_lib
 
 
                     byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
-                    Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string, string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
+                    Dictionary<string, dynamic> metadata = yamlDeserializer.Deserialize<Dictionary<string, dynamic>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
                     byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw, header_raw.Length - 32, header_raw.Length);
 
 
@@ -158,7 +158,7 @@ namespace rfap_cs_lib
         {
             if(tcpClient != null && tcpClient.Connected)
             {
-                Dictionary<string,string> metadata = new Dictionary<string,string>();
+                Dictionary<string, dynamic> metadata = new Dictionary<string, dynamic>();
                 send_command(Commands.CMD_PING, metadata, null);
                 Thread.Sleep(waitForResponse);
                 recv_command();
@@ -175,7 +175,7 @@ namespace rfap_cs_lib
         {
             if (tcpClient != null && tcpClient.Connected)
             {
-                Dictionary<string, string> metadata = new Dictionary<string, string>();
+                Dictionary<string, dynamic> metadata = new Dictionary<string, dynamic>();
                 send_command(Commands.CMD_DISCONNECT, metadata, null);
                 tcpClient.Close();
 
@@ -187,7 +187,7 @@ namespace rfap_cs_lib
             }
         }
 
-        public Dictionary<string, string> rfap_info(string path, bool verbose)
+        public Dictionary<string, dynamic> rfap_info(string path, bool verbose)
         {
             string[] requireDetails = new string[] { };
             if (verbose)
@@ -195,7 +195,7 @@ namespace rfap_cs_lib
                 requireDetails = new string[] { "DirectorySize", "ElementsNumber" };
             }
 
-            send_command(Commands.CMD_INFO, new Dictionary<string, string>() { { "Path", path }, { "RequestDetails", BitTools.GetStringFormStringArray(requireDetails)} }, null);
+            send_command(Commands.CMD_INFO, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
             Thread.Sleep(waitForResponse);
             Data data = recv_command();
             if (data != null)
