@@ -58,9 +58,10 @@ namespace rfap_cs_lib
         {
             string result = "[";
 
-            foreach(string str in array)
+            for(int i = 0; i < array.Length; i++)
             {
-                result = result + ", " + str;
+                if(i == 0) { result = result + array[i]; }
+                else { result = result + ", " + array[i]; }
             }
 
             result = result + "]";
