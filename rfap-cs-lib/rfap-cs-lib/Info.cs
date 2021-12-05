@@ -8,6 +8,6 @@ namespace rfap_cs_lib
 {
     static class Info
     {
-       public static byte[] VERSION = new byte[2] { 00, 01 };
+       public static byte[] VERSION = new byte[2] { 0x00, 0x01 };
     }
 }

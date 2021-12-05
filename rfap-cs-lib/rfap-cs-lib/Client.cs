@@ -99,7 +99,7 @@ namespace rfap_cs_lib
 
                     
 
-                    if(version.Equals(supportetVersion))
+                    if(version[0] != Info.VERSION[0] && version[1] != Info.VERSION[1])
                     {
                         throw new Exception($"trying to receive packet of unsupported version (v{version[0]}.{version[1]})");
                     }
@@ -110,14 +110,14 @@ namespace rfap_cs_lib
                     byte[] header_length = new byte[4];
                     header_length = BitTools.GetBytesBetweenArray(data, 2, 2 + 4);
 
-                    byte[] header_raw = new byte[BitTools.GetIntFromByte(header_length)];
-                    header_raw = BitTools.GetBytesBetweenArray(data, 2 + 4, 2 + 4 + BitTools.GetIntFromByte(header_length));
+                    int header_length_int = BitTools.GetIntFromByte(header_length);
 
+                    byte[] header_raw = new byte[header_length_int];
+                    header_raw = BitTools.GetBytesBetweenArray(data, 2 + 4, 2 + 4 + header_length_int);
 
                     byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
                     Dictionary<string, dynamic> metadata = yamlDeserializer.Deserialize<Dictionary<string, dynamic>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
                     byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw, header_raw.Length - 32, header_raw.Length);
-
 
                     // get body
 

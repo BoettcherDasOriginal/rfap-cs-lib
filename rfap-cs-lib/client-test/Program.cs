@@ -20,11 +20,32 @@ namespace client_test
                 Console.WriteLine("Connected to 127.0.0.1:6700");
 
                 var header = client.rfap_info("/",true);
+
                 if(header != null)
                 {
                     for (int i = 0; i < header.Count; i++)
                     {
-                        Console.WriteLine(header.ElementAt(i));
+                        if(header.ElementAt(i).Value is List<object>)
+                        {
+                            List<object> list = (List<object>)header.ElementAt(i).Value;
+                            if(list.Count > 0)
+                            {
+                                Console.WriteLine("[" + header.ElementAt(i).Key);
+                                foreach (string str in list)
+                                {
+                                    Console.WriteLine(str);
+                                }
+                                Console.WriteLine("]");
+                            }
+                            else
+                            {
+                                Console.WriteLine("[" + header.ElementAt(i).Key + ", EMPTY]");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine(header.ElementAt(i));
+                        }
                     }
                 }
 
