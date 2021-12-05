@@ -53,5 +53,19 @@ namespace rfap_cs_lib
 
             return BitConverter.ToInt32(bytes, 0);
         }
+
+        public static string GetStringFormStringArray(string[] array)
+        {
+            string result = "[";
+
+            foreach(string str in array)
+            {
+                result = result + ", " + str;
+            }
+
+            result = result + "]";
+            
+            return result;
+        }
     }
 }

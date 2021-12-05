@@ -13,21 +13,20 @@ namespace client_test
         static void Main(string[] args)
         {
             Client client = new Client();
-            bool connected = client.Connect(IPAddress.Parse("127.0.0.1"), 6700);
+            bool connected = client.Connect(IPAddress.Parse("127.0.0.1"), 6700,100);
 
             if (connected)
             {
                 Console.WriteLine("Connected to 127.0.0.1:6700");
 
-                Dictionary<string, string> metadata = new Dictionary<string, string>() { { "Path", "C:/GoServer" } };
-                client.send_command(Commands.CMD_INFO, metadata, null);
-
-                Data data = client.recv_command();
-                for(int i = 0; i < data.Metadata.Count; i++)
+                var header = client.rfap_info("/",true);
+                if(header != null)
                 {
-                    Console.WriteLine(data.Metadata.ElementAt(i));
+                    for (int i = 0; i < header.Count; i++)
+                    {
+                        Console.WriteLine(header.ElementAt(i));
+                    }
                 }
-                
 
                 client.rfab_ping();
                 client.rfab_disconnect();

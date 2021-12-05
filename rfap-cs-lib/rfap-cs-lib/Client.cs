@@ -6,20 +6,27 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using YamlDotNet.Serialization;
+using System.Threading;
 
 namespace rfap_cs_lib
 {
     public class Client
     {
         TcpClient tcpClient = null;
+        int waitForResponse = 0;
+        byte[] supportetVersion = new byte[] { 0x00, 0x01 };
 
-        public bool Connect(IPAddress iPAddress, int port)
+        public bool Connect(IPAddress iPAddress, int port, int waitForResponse)
         {
             tcpClient = new TcpClient();
+
+            this.waitForResponse = waitForResponse;
 
             try { tcpClient.Connect(iPAddress, port); return tcpClient.Connected; }
             catch { tcpClient = null; return false; }
         }
+
+        #region Send/Receive command
 
         public bool send_command(byte[] command, Dictionary<string, string> metaData, byte[] body)
         {
@@ -27,10 +34,11 @@ namespace rfap_cs_lib
             {
                 var yamlSerializer = new SerializerBuilder().Build();
 
+                List<byte> data = new List<byte>();
 
-                // send version
+                // add version
 
-                tcpClient.Client.Send(Info.VERSION);
+                data = BitTools.AddBytesToList(data, Info.VERSION);
 
 
                 // encode header
@@ -42,21 +50,26 @@ namespace rfap_cs_lib
                 header = BitTools.AddBytesToList(header, new byte[32]);
 
 
-                // send header
+                // add header
 
-                tcpClient.Client.Send(BitTools.GetBytesFromInt(header.ToArray().Length));
-                tcpClient.Client.Send(header.ToArray());
+                data = BitTools.AddBytesToList(data, BitTools.GetBytesFromInt(header.ToArray().Length));
+                data = BitTools.AddBytesToList(data, header.ToArray());
 
 
-                // send body
+                // add body
                 if (body == null)
                 {
                     body = new byte[0];
                 }
 
-                tcpClient.Client.Send(BitTools.GetBytesFromInt(body.Length + 32));
-                tcpClient.Client.Send(body);
-                tcpClient.Client.Send(new byte[32]);
+                data = BitTools.AddBytesToList(data, BitTools.GetBytesFromInt(body.Length + 32));
+                data = BitTools.AddBytesToList(data, body);
+                data = BitTools.AddBytesToList(data,new byte[32]);
+                
+
+                // send Data
+
+                tcpClient.Client.Send(data.ToArray());
 
                 return true;
             }
@@ -71,39 +84,65 @@ namespace rfap_cs_lib
         {
             if(tcpClient != null && tcpClient.Connected)
             {
-                var yamlDeserializer = new DeserializerBuilder().Build();
+                try
+                {
+                    var yamlDeserializer = new DeserializerBuilder().Build();
+
+                    byte[] data = new byte[2 + 4 + (16 * 1024 * 1024) + 4 + (16 * 1024 * 1024)];
+                    tcpClient.Client.Receive(data);
 
 
-                // get version
+                    //get version
 
-                byte[] version = new byte[2];
-                tcpClient.Client.Receive(version);
+                    byte[] version = new byte[2];
+                    version = BitTools.GetBytesBetweenArray(data, 0, 2);
 
+                    
 
-                // get header
-
-                byte[] header_length = new byte[4];
-                tcpClient.Client.Receive(header_length);
-
-                byte[] header_raw = new byte[BitTools.GetIntFromByte(header_length)];
-                tcpClient.Client.Receive(header_raw);
-
-                byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
-                Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string,string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
-                byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw,header_raw.Length - 32, header_raw.Length);
+                    if(version.Equals(supportetVersion))
+                    {
+                        throw new Exception($"trying to receive packet of unsupported version (v{version[0]}.{version[1]})");
+                    }
 
 
-                // get body
+                    //get header
 
-                byte[] body_length = new byte[4];
-                tcpClient.Client.Receive(body_length);
-                byte[] body = new byte[BitTools.GetIntFromByte(body_length) - 32];
-                tcpClient.Client.Receive(body);
-                byte[] body_checksum = new byte[32];
-                tcpClient.Client.Receive(body_checksum);
+                    byte[] header_length = new byte[4];
+                    header_length = BitTools.GetBytesBetweenArray(data, 2, 2 + 4);
+
+                    byte[] header_raw = new byte[BitTools.GetIntFromByte(header_length)];
+                    header_raw = BitTools.GetBytesBetweenArray(data, 2 + 4, 2 + 4 + BitTools.GetIntFromByte(header_length));
 
 
-                return new Data(version,command,metadata,header_checksum,body,body_checksum);
+                    byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
+                    Dictionary<string, string> metadata = yamlDeserializer.Deserialize<Dictionary<string, string>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
+                    byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw, header_raw.Length - 32, header_raw.Length);
+
+
+                    // get body
+
+                    byte[] body_length = new byte[4];
+                    body_length = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length), 2 + 4 + BitTools.GetIntFromByte(header_length) + 4);
+
+                    byte[] body = new byte[BitTools.GetIntFromByte(body_length) - 32];
+                    body = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length) - 32);
+
+                    byte[] body_checksum = new byte[32];
+                    body_checksum = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length) - 32, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length));
+
+
+                    // return data
+
+                    return new Data(version, command, metadata, header_checksum, body, body_checksum);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("ERROR receiving data:");
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("");
+
+                    return null;
+                }
             }
             else
             {
@@ -111,12 +150,17 @@ namespace rfap_cs_lib
             }
         }
 
+        #endregion
+
+        #region IMPLEMENTATION OF RFAP COMMANDS
+
         public bool rfab_ping()
         {
             if(tcpClient != null && tcpClient.Connected)
             {
                 Dictionary<string,string> metadata = new Dictionary<string,string>();
                 send_command(Commands.CMD_PING, metadata, null);
+                Thread.Sleep(waitForResponse);
                 recv_command();
 
                 return true;
@@ -142,5 +186,33 @@ namespace rfap_cs_lib
                 return false;
             }
         }
+
+        public Dictionary<string, string> rfap_info(string path, bool verbose)
+        {
+            string[] requireDetails = new string[] { };
+            if (verbose)
+            {
+                requireDetails = new string[] { "DirectorySize", "ElementsNumber" };
+            }
+
+            send_command(Commands.CMD_INFO, new Dictionary<string, string>() { { "Path", path }, { "RequestDetails", BitTools.GetStringFormStringArray(requireDetails)} }, null);
+            Thread.Sleep(waitForResponse);
+            Data data = recv_command();
+            if (data != null)
+            {
+                return data.Metadata;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // TO-DO
+
+        // - rfap_file_read function
+        // - rfap_directory_read function
+
+        #endregion
     }
 }
