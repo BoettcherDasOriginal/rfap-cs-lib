@@ -25,4 +25,44 @@ namespace rfap_cs_lib
             this.body_checksum = body_checksum;
         }
     }
+
+    public class FileReadData
+    {
+        public bool ERROR { get; set; }
+        public Dictionary<string, dynamic> Metadata { get; set; }
+        public byte[] body { get; set; }
+
+        public FileReadData(Dictionary<string, dynamic> Metadata, byte[] body)
+        {
+            this.Metadata = Metadata;
+            this.body = body;
+            ERROR = false;
+        }
+        public FileReadData(Dictionary<string, dynamic> Metadata, byte[] body, bool ERROR)
+        {
+            this.Metadata = Metadata;
+            this.body = body;
+            this.ERROR = ERROR;
+        }
+    }
+
+    public class DirectoryReadData
+    {
+        public bool ERROR { get; set; }
+        public Dictionary<string, dynamic> Metadata { get; set; }
+        public List<string> decodeedBody { get; set; }
+
+        public DirectoryReadData(Dictionary<string, dynamic> Metadata, List<string> decodeedBody)
+        {
+            this.Metadata= Metadata;
+            this.decodeedBody = decodeedBody;
+            ERROR = false;
+        }
+        public DirectoryReadData(Dictionary<string, dynamic> Metadata, List<string> decodeedBody, bool ERROR)
+        {
+            this.Metadata = Metadata;
+            this.decodeedBody = decodeedBody;
+            this.ERROR = ERROR;
+        }
+    }
 }

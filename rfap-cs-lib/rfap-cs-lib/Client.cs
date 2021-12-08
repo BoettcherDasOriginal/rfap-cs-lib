@@ -208,10 +208,64 @@ namespace rfap_cs_lib
             }
         }
 
-        // TO-DO
+        public FileReadData rfap_file_read(string path)
+        {
+            send_command(Commands.CMD_FILE_READ, new Dictionary<string, dynamic>() { { "Path", path } }, null);
+            Thread.Sleep(waitForResponse);
+            Data data = recv_command();
 
-        // - rfap_file_read function
-        // - rfap_directory_read function
+            bool ERROR = false;
+            for (int i = 0; i < data.Metadata.Count; i++)
+            {
+                if (data.Metadata.ElementAt(i).Key == "ErrorCode" && data.Metadata.ElementAt(i).Value != 0)
+                {
+                    ERROR = true;
+                }
+            }
+
+            if (ERROR) { return new FileReadData(data.Metadata, new byte[0], true); }
+            else { return new FileReadData(data.Metadata, data.body); }
+        }
+
+        public DirectoryReadData rfap_directory_read(string path,bool verbose)
+        {
+            string[] requireDetails = new string[] { };
+            if (verbose)
+            {
+                requireDetails = new string[] { "DirectorySize", "ElementsNumber" };
+            }
+
+            send_command(Commands.CMD_DIRECTORY_READ, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
+            Thread.Sleep (waitForResponse);
+            Data directoryData = recv_command();
+
+            bool ERROR = false;
+            for (int i = 0; i < directoryData.Metadata.Count; i++)
+            {
+                if (directoryData.Metadata.ElementAt(i).Key == "ErrorCode" && directoryData.Metadata.ElementAt(i).Value != 0)
+                {
+                    ERROR = true;
+                }
+            }
+
+            if (ERROR) 
+            {
+                return new DirectoryReadData(directoryData.Metadata, new List<string>(),true);
+            }
+            else
+            {
+                List<string> body = new List<string>();
+                foreach (string str in Encoding.UTF8.GetString(directoryData.body).Split('\n'))
+                {
+                    if (str != "")
+                    {
+                        body.Add(str);
+                    }
+                }
+
+                return new DirectoryReadData(directoryData.Metadata, body);
+            }
+        }
 
         #endregion
     }

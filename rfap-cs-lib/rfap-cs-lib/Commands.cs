@@ -11,7 +11,6 @@ namespace rfap_cs_lib
         public static byte[] CMD_PING             = new byte[] { 0x00, 0x00, 0x00, 0x00 };
         public static byte[] CMD_DISCONNECT       = new byte[] { 0x01, 0x00, 0x00, 0x00 };
         public static byte[] CMD_INFO             = new byte[] { 0xa0, 0x01, 0x00, 0x00 };
-        public static byte[] CMD_ERROR            = new byte[] { 0xff, 0xff, 0xff, 0xff };
         public static byte[] CMD_FILE_READ        = new byte[] { 0xf0, 0x02, 0x00, 0x00 };
         public static byte[] CMD_FILE_DELETE      = new byte[] { 0xf1, 0x01, 0x00, 0x00 };
         public static byte[] CMD_FILE_CREATE      = new byte[] { 0xf1, 0x02, 0x00, 0x00 };
