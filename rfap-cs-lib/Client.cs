@@ -16,6 +16,15 @@ namespace rfap_cs_lib
         int waitForResponse = 0;
         byte[] supportetVersion = new byte[] { 0x00, 0x01 };
 
+        /// <summary>
+        /// Connects the rfap client with the specified address of the rfap server
+        /// </summary>
+        /// <param name="iPAddress"></param>
+        /// <param name="port"></param>
+        /// <param name="waitForResponse"></param>
+        /// <returns>
+        /// Returns true if the client has successfully connected
+        /// </returns>
         public bool Connect(IPAddress iPAddress, int port, int waitForResponse)
         {
             tcpClient = new TcpClient();
@@ -28,6 +37,13 @@ namespace rfap_cs_lib
 
         #region Send/Receive command
 
+        /// <summary>
+        /// Sends the specified command, metadata and body to the connected rfap server
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="metaData"></param>
+        /// <param name="body"></param>
+        /// <returns>Returns false if something went wrong</returns>
         public bool send_command(byte[] command, Dictionary<string, dynamic> metaData, byte[] body)
         {
             if (tcpClient != null && tcpClient.Connected)
