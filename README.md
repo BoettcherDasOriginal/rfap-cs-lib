@@ -1,6 +1,6 @@
 # rfap-cs-lib
 
-proof-of-concept file transfer protocol - C# client side.
+proof-of-concept file transfer protocol - C# .NET 6 client side.
 
 ## Related projects
 
