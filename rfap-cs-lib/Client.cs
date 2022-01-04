@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using YamlDotNet.Serialization;
+using System.Security.Cryptography;
 using System.Threading;
 
 namespace rfap_cs_lib
@@ -13,6 +14,7 @@ namespace rfap_cs_lib
     public class Client
     {
         TcpClient tcpClient = null;
+        SHA256 sha256Hash = null;
         int waitForResponse = 0;
         byte[] supportetVersion = new byte[] { 0x00, 0x01 };
 
@@ -28,6 +30,7 @@ namespace rfap_cs_lib
         public bool Connect(IPAddress iPAddress, int port, int waitForResponse)
         {
             tcpClient = new TcpClient();
+            sha256Hash = SHA256.Create();
 
             this.waitForResponse = waitForResponse;
 
@@ -44,48 +47,61 @@ namespace rfap_cs_lib
         /// <param name="metaData"></param>
         /// <param name="body"></param>
         /// <returns>Returns false if something went wrong</returns>
-        public bool send_command(byte[] command, Dictionary<string, dynamic> metaData, byte[] body)
+        public bool send_packet(byte[] command, Dictionary<string, dynamic> metaData, byte[] body)
         {
             if (tcpClient != null && tcpClient.Connected)
             {
                 var yamlSerializer = new SerializerBuilder().Build();
 
-                List<byte> data = new List<byte>();
 
-                // add version
-
-                data = BitTools.AddBytesToList(data, Info.VERSION);
+                // HEADER
 
 
-                // encode header
+                List<byte> header_data = new List<byte>();
+
+                header_data = BitTools.AddBytesToList(header_data, Info.VERSION);
 
                 List<byte> header = new List<byte>();
 
                 header = BitTools.AddBytesToList(header, command);
                 header = BitTools.AddBytesToList(header, Encoding.UTF8.GetBytes(yamlSerializer.Serialize(metaData)));
-                header = BitTools.AddBytesToList(header, new byte[32]);
+                byte[] header_checksum = sha256Hash.ComputeHash(header.ToArray());
+                header = BitTools.AddBytesToList(header, header_checksum);
+
+                header_data = BitTools.AddBytesToList(header_data, BitTools.GetBytesFromInt(header.ToArray().Length));
+                header_data = BitTools.AddBytesToList(header_data, header.ToArray());
+
+                tcpClient.Client.Send(header_data.ToArray());
 
 
-                // add header
-
-                data = BitTools.AddBytesToList(data, BitTools.GetBytesFromInt(header.ToArray().Length));
-                data = BitTools.AddBytesToList(data, header.ToArray());
+                // BODY
 
 
-                // add body
                 if (body == null)
                 {
                     body = new byte[0];
                 }
 
-                data = BitTools.AddBytesToList(data, BitTools.GetBytesFromInt(body.Length + 32));
-                data = BitTools.AddBytesToList(data, body);
-                data = BitTools.AddBytesToList(data,new byte[32]);
-                
+                byte[] body_len = BitTools.GetBytesFromInt(body.Length + 32);
+                byte[] body_checksum = sha256Hash.ComputeHash(body);
 
-                // send Data
+                tcpClient.Client.Send(body_len);
 
-                tcpClient.Client.Send(data.ToArray());
+                int i = 0;
+                List<byte> body_data = new List<byte>();
+                body_data = BitTools.AddBytesToList(body_data, body);
+                body_data = BitTools.AddBytesToList(body_data, body_checksum);
+
+                while (true)
+                {
+                    if(i + Info.MAX_BYTES_SENT_AT_ONCE > body_data.ToArray().Length)
+                    {
+                        tcpClient.Client.Send(BitTools.GetBytesBetweenArray(body_data.ToArray(),i, body_data.ToArray().Length));
+                        break;
+                    }
+                    tcpClient.Client.Send(BitTools.GetBytesBetweenArray(body_data.ToArray(), i, i + Info.MAX_BYTES_SENT_AT_ONCE));
+                    i += Info.MAX_BYTES_SENT_AT_ONCE;
+                }
 
                 return true;
             }
@@ -104,16 +120,14 @@ namespace rfap_cs_lib
                 {
                     var yamlDeserializer = new DeserializerBuilder().Build();
 
-                    byte[] data = new byte[2 + 4 + (16 * 1024 * 1024) + 4 + (16 * 1024 * 1024)];
-                    tcpClient.Client.Receive(data);
+                    //(byte[] data = new byte[2 + 4 + (16 * 1024 * 1024) + 4 + (16 * 1024 * 1024)];
+                    //tcpClient.Client.Receive(data);
 
 
                     //get version
 
                     byte[] version = new byte[2];
-                    version = BitTools.GetBytesBetweenArray(data, 0, 2);
-
-                    
+                    tcpClient.Client.Receive(version);
 
                     if(version[0] != Info.VERSION[0] && version[1] != Info.VERSION[1])
                     {
@@ -123,33 +137,38 @@ namespace rfap_cs_lib
 
                     //get header
 
-                    byte[] header_length = new byte[4];
-                    header_length = BitTools.GetBytesBetweenArray(data, 2, 2 + 4);
+                    byte[] header_length_raw = new byte[4];
+                    tcpClient.Client.Receive(header_length_raw);
+                    int header_length = BitTools.GetIntFromByte(header_length_raw);
 
-                    int header_length_int = BitTools.GetIntFromByte(header_length);
-
-                    byte[] header_raw = new byte[header_length_int];
-                    header_raw = BitTools.GetBytesBetweenArray(data, 2 + 4, 2 + 4 + header_length_int);
+                    byte[] header_raw = new byte[header_length];
+                    tcpClient.Client.Receive(header_raw);
 
                     byte[] command = BitTools.GetBytesBetweenArray(header_raw, 0, 4);
                     Dictionary<string, dynamic> metadata = yamlDeserializer.Deserialize<Dictionary<string, dynamic>>(Encoding.UTF8.GetString(BitTools.GetBytesBetweenArray(header_raw, 4, header_raw.Length - 32)));
                     byte[] header_checksum = BitTools.GetBytesBetweenArray(header_raw, header_raw.Length - 32, header_raw.Length);
 
-                    // get body
+
+                    //get Body
 
                     byte[] body_length = new byte[4];
-                    body_length = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length), 2 + 4 + BitTools.GetIntFromByte(header_length) + 4);
+                    tcpClient.Client.Receive(body_length);
 
-                    byte[] body = new byte[BitTools.GetIntFromByte(body_length) - 32];
-                    body = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length) - 32);
+                    List<byte> body = new List<byte>();
+                    while (body.ToArray().Length < BitTools.GetIntFromByte(body_length) - 32)
+                    {
+                        byte[] bytesReceived = new byte[Info.MAX_BYTES_SENT_AT_ONCE];
+                        tcpClient.Client.Receive(bytesReceived);
+
+                        body = BitTools.AddBytesToList(body, bytesReceived);
+                    }
 
                     byte[] body_checksum = new byte[32];
-                    body_checksum = BitTools.GetBytesBetweenArray(data, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length) - 32, 2 + 4 + BitTools.GetIntFromByte(header_length) + 4 + BitTools.GetIntFromByte(body_length));
-
+                    tcpClient.Client.Receive(body_checksum);
 
                     // return data
 
-                    return new Data(version, command, metadata, header_checksum, body, body_checksum);
+                    return new Data(version, command, metadata, header_checksum, body.ToArray(), body_checksum);
                 }
                 catch (Exception ex)
                 {
@@ -175,7 +194,7 @@ namespace rfap_cs_lib
             if(tcpClient != null && tcpClient.Connected)
             {
                 Dictionary<string, dynamic> metadata = new Dictionary<string, dynamic>();
-                send_command(Commands.CMD_PING, metadata, null);
+                send_packet(Commands.CMD_PING, metadata, null);
                 Thread.Sleep(waitForResponse);
                 recv_command();
 
@@ -192,7 +211,7 @@ namespace rfap_cs_lib
             if (tcpClient != null && tcpClient.Connected)
             {
                 Dictionary<string, dynamic> metadata = new Dictionary<string, dynamic>();
-                send_command(Commands.CMD_DISCONNECT, metadata, null);
+                send_packet(Commands.CMD_DISCONNECT, metadata, null);
                 tcpClient.Close();
 
                 return true;
@@ -211,7 +230,7 @@ namespace rfap_cs_lib
                 requireDetails = new string[] { "DirectorySize", "ElementsNumber" };
             }
 
-            send_command(Commands.CMD_INFO, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
+            send_packet(Commands.CMD_INFO, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
             Thread.Sleep(waitForResponse);
             Data data = recv_command();
             if (data != null)
@@ -226,7 +245,7 @@ namespace rfap_cs_lib
 
         public FileReadData rfap_file_read(string path)
         {
-            send_command(Commands.CMD_FILE_READ, new Dictionary<string, dynamic>() { { "Path", path } }, null);
+            send_packet(Commands.CMD_FILE_READ, new Dictionary<string, dynamic>() { { "Path", path } }, null);
             Thread.Sleep(waitForResponse);
             Data data = recv_command();
 
@@ -251,7 +270,7 @@ namespace rfap_cs_lib
                 requireDetails = new string[] { "DirectorySize", "ElementsNumber" };
             }
 
-            send_command(Commands.CMD_DIRECTORY_READ, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
+            send_packet(Commands.CMD_DIRECTORY_READ, new Dictionary<string, dynamic>() { { "Path", path }, { "RequestDetails", requireDetails } }, null);
             Thread.Sleep (waitForResponse);
             Data directoryData = recv_command();
 
